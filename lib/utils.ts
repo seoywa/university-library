@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getInitials = (name: string): string => name
-  .split("")
+  .split(" ")
   .map(part => part[0])
   .join("")
   .toUpperCase()

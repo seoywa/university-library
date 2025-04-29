@@ -1,11 +1,14 @@
 import NextAuth, { User } from "next-auth";
+import { compare } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "./database/drizzle";
-import { users } from "./database/schema";
+import { db } from "@/database/drizzle";
+import { users } from "@/database/schema";
 import { eq } from "drizzle-orm";
-import { compare } from 'bcryptjs';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     CredentialsProvider({
       async authorize(credentials) {
@@ -31,19 +34,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           id: user[0].id.toString(),
           email: user[0].email,
-          user: user[0].fullName
+          name: user[0].fullName,
         } as User;
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-  },
   pages: {
-    signIn: '/sign-in'
+    signIn: "/sign-in",
   },
   callbacks: {
-    async jwt({token, user}) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
@@ -51,14 +51,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return token;
     },
-
-    async session({ session, token}) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
       }
 
-      return session
-    }
-  }
+      return session;
+    },
+  },
 });
